@@ -25,13 +25,24 @@ def init_db():
         )
     ''')
     
-    # Check if we have any listeners, if not, add a Default Admin for you to test
-    c.execute('SELECT * FROM listeners')
-    if c.fetchone() is None:
-        default_pass = generate_password_hash("admin123")
-        c.execute('INSERT INTO listeners (email, password, name) VALUES (?, ?, ?)', 
-                  ("admin@unnsaid.com", default_pass, "Admin Listener"))
-        print(">>> CREATED DEFAULT LISTENER: admin@unnsaid.com / admin123")
+    # --- MANUAL LISTENER LIST ---
+    # Add your real students here!
+    # Format: ("email", "password", "Name")
+    students_to_add = [
+        ("admin@unnsaid.com", "admin123", "Admin Listener"),
+        ("sarah@university.edu", "psych2024", "Sarah (Psych Student)"),
+        ("mike@university.edu", "securePass1", "Mike (Trained Peer)"),
+        # Add more lines here for more students
+    ]
+
+    for email, password, name in students_to_add:
+        # Check if user exists
+        c.execute('SELECT * FROM listeners WHERE email = ?', (email,))
+        if c.fetchone() is None:
+            hashed_pw = generate_password_hash(password)
+            c.execute('INSERT INTO listeners (email, password, name) VALUES (?, ?, ?)', 
+                      (email, hashed_pw, name))
+            print(f">>> ADDED LISTENER: {name} ({email})")
         
     conn.commit()
     conn.close()
